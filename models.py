@@ -12,7 +12,6 @@ mimic the Amazon Mechanical Turk data structures as specified in the
 
 http://docs.amazonwebservices.com/AWSMechTurk/2008-08-02/AWSMturkAPI/
 
-
 To keep the experience easier for a Django user, Python and Django
 conventions are used whenever possible. For example, the Mechanical Turk
 API has an attribute 'HITId.' However, when modeled here, that attribute
@@ -59,6 +58,9 @@ class HIT(models.Model):
             (REVIEWED_APPROPRIATE, _REVIEWED_APPROPRIATE),
             (REVIEWED_INAPPROPRIATE, _REVIEWED_INAPPROPRIATE)
     )
+    # Convenience lookup dictionaries for the above lists
+    reverse_status_lookup = dict((v,k) for k,v in STATUS_CHOICES)
+    reverse_review_lookup = dict((v,k) for k,v in REVIEW_CHOICES)
 
     hit_id = models.CharField(
             "HIT ID",
@@ -89,7 +91,8 @@ class HIT(models.Model):
             blank=True,
             help_text="A general description of the HIT",
     )
-    keyword = models.TextField(
+    keywords = models.TextField(
+            "Keywords",
             null=True,
             blank=True,
             help_text=("One or more words or phrases that describe "
@@ -157,6 +160,25 @@ class HIT(models.Model):
             null=True,
             blank=True,
             help_text="Indicates the review status of the HIT."
+    )
+    number_of_assignments_pending = models.PositiveIntegerField(
+            null=True,
+            blank=True,
+            help_text=("The number of assignments for this HIT that have "
+                       "been accepted by Workers, but have not yet been "
+                       "submitted, returned, abandoned.")
+    )
+    number_of_assignments_available = models.PositiveIntegerField(
+            null=True,
+            blank=True,
+            help_text=("The number of assignments for this HIT that are "
+                       "available for Workers to accept"),
+    )
+    number_of_assignments_completed = models.PositiveIntegerField(
+            null=True,
+            blank=True,
+            help_text=("The number of assignments for this HIT that "
+                       "have been approved or rejected.")
     )
 
     def __unicode__(self):
