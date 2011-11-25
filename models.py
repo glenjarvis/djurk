@@ -8,7 +8,7 @@ The Human Intelligent Task (HIT) related data that is created by using
 Amazon Mechanical Turk can be transient. After the data is retrieved
 from Mechanial Turk, it is often stored locally. These Django models
 mimic the Amazon Mechanical Turk data structures as specified in the
-"Amazon Mechanical Turk API Reference (API Version 2008-08-02): 
+"Amazon Mechanical Turk API Reference (API Version 2008-08-02):
 
 http://docs.amazonwebservices.com/AWSMechTurk/2008-08-02/AWSMturkAPI/
 
@@ -26,12 +26,7 @@ from django.db import models
 
 
 class HIT(models.Model):
-    """An Amazon Mechanical Turk Human Intelligence Task as Django Model
-   
-    Note that although the Django convention is to avoid having nullable
-    CharFields, this is allowed in these models as these are possible
-    values that are returned from the Mechanical Turk API.
-    """
+    """An Amazon Mechanical Turk Human Intelligence Task as Django Model"""
     (ASSIGNABLE, UNASSIGNABLE, REVIEWABLE, REVIEWING, DISPOSED) = (
           'A', 'U', 'R', 'G', 'D')
 
@@ -43,7 +38,7 @@ class HIT(models.Model):
 
     (_NOT_REVIEWED, _MARKED_FOR_REVIEW, _REVIEWED_APPROPRIATE,
           _REVIEWED_INAPPROPRIATE) = ("NotReviewed", "MarkedForReview",
-          "ReviewedAppropriate","ReviewedInappropriate")
+          "ReviewedAppropriate", "ReviewedInappropriate")
 
     STATUS_CHOICES = (
             (ASSIGNABLE, _ASSIGNABLE),
@@ -59,8 +54,8 @@ class HIT(models.Model):
             (REVIEWED_INAPPROPRIATE, _REVIEWED_INAPPROPRIATE)
     )
     # Convenience lookup dictionaries for the above lists
-    reverse_status_lookup = dict((v,k) for k,v in STATUS_CHOICES)
-    reverse_review_lookup = dict((v,k) for k,v in REVIEW_CHOICES)
+    reverse_status_lookup = dict((v, k) for k, v in STATUS_CHOICES)
+    reverse_review_lookup = dict((v, k) for k, v in REVIEW_CHOICES)
 
     hit_id = models.CharField(
             "HIT ID",
@@ -120,7 +115,7 @@ class HIT(models.Model):
             help_text=("The amount of time, in seconds, after which the "
                        "HIT is no longer available for users to accept.")
     )
-    assignment_duration_in_seconds= models.PositiveIntegerField(
+    assignment_duration_in_seconds = models.PositiveIntegerField(
             null=True,
             blank=True,
             help_text=("The length of time, in seconds, that a worker has "

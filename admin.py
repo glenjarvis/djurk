@@ -5,11 +5,12 @@ from django.contrib import admin
 
 from djurk.models import HIT
 
+
 class HIT_Admin(admin.ModelAdmin):
     date_hierarchy = 'creation_time'
     fieldsets = (
             (None, {
-                'fields': (('hit_id','hit_type_id'),
+                'fields': (('hit_id', 'hit_type_id'),
                            ('creation_time', 'hit_status'),
                            ('title', 'keywords', 'description'),
                            'reward',
