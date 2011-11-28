@@ -26,7 +26,7 @@ from django.db import models
 
 
 class HIT(models.Model):
-    """An Amazon Mechanical Turk Human Intelligence Task as Django Model"""
+    """An Amazon Mechanical Turk Human Intelligence Task as a Django Model"""
     (ASSIGNABLE, UNASSIGNABLE, REVIEWABLE, REVIEWING, DISPOSED) = (
           'A', 'U', 'R', 'G', 'D')
 
@@ -59,7 +59,9 @@ class HIT(models.Model):
 
     hit_id = models.CharField(
             "HIT ID",
+            primary_key=True, # See docs/ for a discussion on char primary key
             max_length=128,
+            unique=True,
             null=True,
             help_text="A unique identifier for the HIT"
     )
@@ -176,5 +178,102 @@ class HIT(models.Model):
                        "have been approved or rejected.")
     )
 
+    class Meta:
+        verbose_name = "HIT"
+        verbose_name_plural = "HITs"
+
     def __unicode__(self):
         return u"HIT: %s" % self.hit_id
+
+
+class Assignment(models.Model):
+    """An Amazon Mechanical Turk Assignment as a Django Model"""
+
+    (_SUBMITTED, _APPROVED, _REJECTED) = ("Submitted", "Approved", "Rejected")
+    (SUBMITTED, APPROVED, REJECTED) = ("S", "A", "R")
+
+    STATUS_CHOICES = (
+            (SUBMITTED, _SUBMITTED),
+            (APPROVED, _APPROVED),
+            (REJECTED, _REJECTED),
+    )
+    # Convenience lookup dictionaries for the above lists
+    reverse_status_lookup = dict((v, k) for k, v in STATUS_CHOICES)
+
+    assignment_id = models.CharField(
+            max_length=128,
+            primary_key=True, # See docs/ for a discussion on char primary key
+            unique=True,
+            null=True,
+            help_text="A unique identifier for the assignment"
+    )
+    worker_id = models.CharField(
+            max_length=128,
+            null=True,
+            blank=True,
+            help_text="The ID of the Worker who accepted the HIT"
+    )
+    hit = models.ForeignKey(
+            HIT,
+            null=True,
+            blank=True,
+    )
+    assignment_status = models.CharField(
+            max_length=1,
+            choices=STATUS_CHOICES,
+            null=True,
+            blank=True,
+            help_text="The status of the assignment"
+    )
+    auto_approval_time = models.DateTimeField(
+            null=True,
+            blank=True,
+            help_text=("If results have been submitted, this is the date "
+                       "and time, in UTC,  the results of the assignment are "
+                       "considered approved automatically if they have not "
+                       "already been explicitly approved or rejected by the "
+                       "requester")
+    )
+    accept_time = models.DateTimeField(
+            null=True,
+            blank=True,
+            help_text=("The date and time, in UTC, the Worker accepted "
+                       " the assignment")
+    )
+    submit_time = models.DateTimeField(
+            null=True,
+            blank=True,
+            help_text=("If the Worker has submitted results, this is the date "
+                       "and time, in UTC, the assignment was submitted")
+    )
+    approval_time = models.DateTimeField(
+            null=True,
+            blank=True,
+            help_text=("If requester has approved the results, this is the "
+                       "date and time, in UTC, the results were approved")
+    )
+    rejection_time = models.DateTimeField(
+            null=True,
+            blank=True,
+            help_text=("If requester has rejected the results, this is the "
+                       "date and time, in UTC, the results were rejected")
+    )
+    deadline = models.DateTimeField(
+            null=True,
+            blank=True,
+            help_text=("The date and time, in UTC, of the deadline for "
+                       "the assignment")
+    )
+    requester_feedback = models.TextField(
+            null=True,
+            blank=True,
+            help_text=("The optional text included with the call to either "
+                       "approve or reject the assignment.")
+    )
+
+    def hit_id(self):
+        """Return the HIT ID as expected by the the Mechanical Turk API"""
+        return self.hit.hit_id
+
+    def __unicode__(self):
+        return u"Assignment: %s" % self.assignment_id

@@ -3,7 +3,7 @@
 
 from django.contrib import admin
 
-from djurk.models import HIT
+from djurk.models import Assignment, HIT
 
 
 class HIT_Admin(admin.ModelAdmin):
@@ -66,4 +66,22 @@ class HIT_Admin(admin.ModelAdmin):
         'keyword',
     )
 
+class AssignmentAdmin(admin.ModelAdmin):
+    date_hierarchy = 'submit_time'
+    list_display = (
+        'assignment_id',
+        'worker_id',
+        'hit',
+        'assignment_status',
+    )
+
+# auto_approval_time = models.DateTimeField(
+# accept_time = models.DateTimeField(
+# submit_time = models.DateTimeField(
+# approval_time = mod
+# rejection_time = models.DateTimeField(
+# deadline = models.DateTimeField(
+# requester_feedback = 
+
 admin.site.register(HIT, HIT_Admin)
+admin.site.register(Assignment, AssignmentAdmin)
