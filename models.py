@@ -277,3 +277,37 @@ class Assignment(models.Model):
 
     def __unicode__(self):
         return u"Assignment: %s" % self.assignment_id
+
+
+class KeyValue(models.Model):
+    """Answer/Key Value Pairs"""
+    MAX_DISPLAY_LENGTH = 255
+
+    key = models.CharField(
+            max_length=255,
+            help_text="The Key (variable) for a QuestionAnswer"
+    )
+    value = models.TextField(
+            null=True,
+            blank=True,
+            help_text="The value associated with the key",
+    )
+    assignment = models.ForeignKey(
+            Assignment,
+            null=True,
+            blank=True,
+    )
+
+    def short_value(self):
+        if len(self.value) > self.MAX_DISPLAY_LENGTH:
+            return u'%s...' % self.value[:self.MAX_DISPLAY_LENGTH]
+        else:
+            return self.value
+    short_value.short_description = "Value (25 chars)..."
+
+    class Meta:
+        verbose_name = "Key-Value Pair"
+        verbose_name_plural = "Key-Value Pairs"
+
+    def __unicode__(self):
+        return u"%s=%s" % (self.key, self.short_value())

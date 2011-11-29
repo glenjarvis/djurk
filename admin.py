@@ -3,7 +3,7 @@
 
 from django.contrib import admin
 
-from djurk.models import Assignment, HIT
+from djurk.models import Assignment, HIT, KeyValue
 
 
 class HIT_Admin(admin.ModelAdmin):
@@ -70,18 +70,42 @@ class AssignmentAdmin(admin.ModelAdmin):
     date_hierarchy = 'submit_time'
     list_display = (
         'assignment_id',
+        'auto_approval_time',
         'worker_id',
         'hit',
         'assignment_status',
     )
+    list_filter = (
+        'assignment_status',
+    )
+    fieldsets = (
+            (None, {
+                'fields': (('assignment_id', 'worker_id',),
+                           'hit',
+                           'requester_feedback',
+                           ),
+            }),
+            ('Times', {
+                'classes': ('collapse',),
+                'fields': ('submit_time',
+                           'approval_time',
+                           'auto_approval_time',
+                           'accept_time',
+                           'rejection_time',
+                           'deadline',
+                           ),
+            }),
+    )
+    readonly_fields = ('assignment_id', 'hit',
+                       'worker_id',)
 
-# auto_approval_time = models.DateTimeField(
-# accept_time = models.DateTimeField(
-# submit_time = models.DateTimeField(
-# approval_time = mod
-# rejection_time = models.DateTimeField(
-# deadline = models.DateTimeField(
-# requester_feedback = 
+class KeyValueAdmin(admin.ModelAdmin):
+    list_display = (
+        'assignment',
+        'key',
+        'short_value',
+    )
 
 admin.site.register(HIT, HIT_Admin)
 admin.site.register(Assignment, AssignmentAdmin)
+admin.site.register(KeyValue, KeyValueAdmin)
