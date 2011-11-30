@@ -60,14 +60,14 @@ class HIT(models.Model):
     hit_id = models.CharField(
             "HIT ID",
             primary_key=True, # See docs/ for a discussion on char primary key
-            max_length=128,
+            max_length=255,
             unique=True,
             null=True,
             help_text="A unique identifier for the HIT"
     )
     hit_type_id = models.CharField(
             "HIT Type ID",
-            max_length=128,
+            max_length=255,
             null=True,
             blank=True,
             help_text="The ID of the HIT type of this HIT"
@@ -78,7 +78,7 @@ class HIT(models.Model):
             help_text="The UTC date and time the HIT was created"
     )
     title = models.CharField(
-            max_length=128,
+            max_length=255,
             null=True,
             blank=True,
             help_text="The title of the HIT"
@@ -201,14 +201,14 @@ class Assignment(models.Model):
     reverse_status_lookup = dict((v, k) for k, v in STATUS_CHOICES)
 
     assignment_id = models.CharField(
-            max_length=128,
+            max_length=255,
             primary_key=True, # See docs/ for a discussion on char primary key
             unique=True,
             null=True,
             help_text="A unique identifier for the assignment"
     )
     worker_id = models.CharField(
-            max_length=128,
+            max_length=255,
             null=True,
             blank=True,
             help_text="The ID of the Worker who accepted the HIT"
@@ -303,7 +303,7 @@ class KeyValue(models.Model):
             return u'%s...' % self.value[:self.MAX_DISPLAY_LENGTH]
         else:
             return self.value
-    short_value.short_description = "Value (25 chars)..."
+    short_value.short_description = "Value (%d chars)..." % MAX_DISPLAY_LENGTH
 
     class Meta:
         verbose_name = "Key-Value Pair"
