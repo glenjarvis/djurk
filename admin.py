@@ -6,6 +6,11 @@ from django.contrib import admin
 from djurk.models import Assignment, HIT, KeyValue
 
 
+class KeyValueInline(admin.TabularInline):
+    model = KeyValue
+    #fk_name = "to_assignment"
+
+
 class HIT_Admin(admin.ModelAdmin):
     date_hierarchy = 'creation_time'
     fieldsets = (
@@ -63,7 +68,7 @@ class HIT_Admin(admin.ModelAdmin):
         'hit_type_id',
         'title',
         'description',
-        'keyword',
+        'keywords',
     )
 
 class AssignmentAdmin(admin.ModelAdmin):
@@ -98,6 +103,10 @@ class AssignmentAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('assignment_id', 'hit',
                        'worker_id',)
+    inlines = [
+        KeyValueInline,
+    ]
+
 
 class KeyValueAdmin(admin.ModelAdmin):
     list_display = (
