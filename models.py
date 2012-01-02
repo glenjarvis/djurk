@@ -212,6 +212,36 @@ class HIT(models.Model):
                        "have been approved or rejected.")
     )
 
+    def disable(self):
+        """Disable/Destroy HIT that is no longer needed
+
+        Remove a HIT from the Mechanical Turk marketplace, approves all
+        submitted assignments that have not already been approved or
+        rejected, and disposes of the HIT and all assignment data.
+
+        Assignments for the HIT that have already been submitted, but
+        not yet approved or rejected, will be automatically approved.
+        Assignments in progress at the time of this method call  will be
+        approved once the assignments are submitted. You will be charged
+        for approval of these assignments. This method completely
+        disposes of the HIT and all submitted assignment data.
+
+        Assignment results data available at the time of this method
+        call are saved in the Django models. However, additional
+        Assignment results data cannot be retrieved for a HIT that has
+        been disposed.
+
+        It is not possible to re-enable a HIT once it has been disabled.
+        To make the work from a disabled HIT available again, create a
+        new HIT.
+
+        This is a wrapper around the Boto API. Also see:
+        http://boto.cloudhackers.com/en/latest/ref/mturk.html
+        """
+        # Check for new results and cache a copy in Django model
+        self.update(do_update_assignments=True)
+        self.connection.dispose_hit(self.mturk_id)
+
     def dispose(self):
         """Dispose of a HIT that is no longer needed.
 
@@ -267,6 +297,48 @@ class HIT(models.Model):
         http://boto.cloudhackers.com/en/latest/ref/mturk.html
         """
         self.connection.expire_hit(self.mturk_id)
+        self.update()
+
+    def extend(self, assignments_increment=None, expiration_increment=None):
+        """Increase the maximum assignments or extend the expiration date
+
+        Increase the maximum number of assignments, or extend the
+        expiration date, of an existing HIT.
+
+        NOTE: If a HIT has a status of Reviewable and the HIT is
+        extended to make it Available, the HIT will not be returned by
+        helpers.update_reviewable_hits() and its submitted assignments
+        will not be returned by Assignment.update() until the HIT is
+        Reviewable again. Assignment auto-approval will still happen on
+        its original schedule, even if the HIT has been extended. Be
+        sure to retrieve and approve (or reject) submitted assignments
+        before extending the HIT, if so desired.
+
+        This is a thin wrapper around the Boto API and taken from their
+        documentation:
+        http://boto.cloudhackers.com/en/latest/ref/mturk.html
+        """
+        self.connection.extend_hit(self.mturk_id,
+                                   assignments_increment=assignments_increment,
+                                   expiration_increment=expiration_increment)
+        self.update()
+
+    def set_reviewing(self, revert=None):
+        """Toggle HIT status between Reviewable and Reviewing
+
+        Update a HIT with a status of Reviewable to have a status of
+        Reviewing, or reverts a Reviewing HIT back to the Reviewable
+        status.
+
+        Only HITs with a status of Reviewable can be updated with a
+        status of Reviewing. Similarly, only Reviewing HITs can be
+        reverted back to a status of Reviewable.
+
+        This is a thin wrapper around the Boto API and taken from their
+        documentation:
+        http://boto.cloudhackers.com/en/latest/ref/mturk.html
+        """
+        self.connection.set_reviewing(self.mturk_id, revert=revert)
         self.update()
 
     def update(self, mturk_hit=None, do_update_assignments=False):
