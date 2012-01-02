@@ -35,21 +35,19 @@ Start Guide.
 
    You should now see a Djurk module with these models:
 
-* Assignments
-* HITs
-* Key-Value Pairs
+    * Assignments
+    * HITs
+    * Key-Value Pairs
 
+8. Find your Amazon Mechanical Turk Private and Public Access Keys
 
-    8. Find your Amazon Mechanical Turk Private and Public Access Keys
+    * AWS Console (http://aws.amazon.com/)
+    * Login
+    * Security Credentials
+    * Access Keys (Access Key ID) and Secret Access Key (click show)
 
-* AWS Console (http://aws.amazon.com/)
-* Login
-* Security Credentials
-* Access Keys (Access Key ID) and Secret Access Key (click show)
-
-
-    9. Create filename 'mturk_config.cfg' in same directory as settings.py. Put
-       this info in it (with this format)
+9. Create filename 'mturk_config.cfg' in same directory as settings.py. Put
+      this info in it (with this format)
 
 ```[Connection]
 aws_acccess_key_id: put_your_access_key_here
