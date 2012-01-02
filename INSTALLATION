@@ -1,1 +1,184 @@
+INSTALLATION
+
+PREREQUISITES
+=============
+* Django
+* Boto
+
+DJANGO
+------
+The Djurk software package is installed into Django as a Django app. This
+means that you first need to have an installed version of Django running.
+
+Follow the instructions at this website:
+https://docs.djangoproject.com/en/dev/intro/install/
+
+NOTE: The project directory that you use in the installation from the above
+      instructions cannot also be called 'djurk'. Use another name, such
+      as 'djurk_project' instead.
+
+
+BOTO
+----
+You will additionally need the 'boto' library that interfaces with Django
+Mechanical Turk.
+
+This is often easily installed with either a pip or easy install command.
+
+Here is an example install (This package was tested with boto version 2.1.1).
+
+prompt> pip install boto==2.1.1
+Downloading/unpacking boto==2.1.1
+  Downloading boto-2.1.1.tar.gz (313Kb): 313Kb downloaded
+  Running setup.py egg_info for package boto
+Installing collected packages: boto
+  Running setup.py install for boto
+    changing mode of build/scripts-2.6/sdbadmin from 644 to 755
+    changing mode of build/scripts-2.6/elbadmin from 644 to 755
+    changing mode of build/scripts-2.6/cfadmin from 644 to 755
+    [snip]
+Successfully installed boto
+Cleaning up...
+
+
+TESTING SETUP
+-------------
+To test the installation of your prerequisites:
+
+STEP 1
+------
+Start the runserver: (i.e., ./manage.py runserver)
+
+prompt> python manage.py runserver
+Validating models...
+
+0 errors found
+Django version 1.3.1, using settings 'djurk_project.settings'
+Development server is running at http://127.0.0.1:8000/
+
+STEP 2
+------
+Go to the Admin site:
+http://127.0.0.1:8000/
+
+If you see the message "It worked! Congratulations on your first Django-powered
+page.' then you have successfully installed Django. Ctrl-C to stop the
+runserver command.
+
+STEP 3
+------
+Test your boto installation. Start the Django shell:
+
+prompt> python manage.py shell
+Python 2.6.1 (r261:67515, Aug  2 2010, 20:10:18) 
+[GCC 4.2.1 (Apple Inc. build 5646)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> import boto
+>>> 
+
+If you saw no errors when issuing the 'import boto' command, then you have
+successfully installed the boto prerequisite.
+
+
+DJURK INSTALLATION
+==================
+1) Download the Djurk project into a temporary directory
+   (or clone it with: git clone https://github.com/glenjarvis/djurk)
+
+2) Copy the subfolder "djurk" to the Django directory that you configured.
+   (See Prerequisite section above). This installs the Django app into your
+   Django installation. Your file structure should be similar to the
+   following:
+   __init__.py	djurk		manage.py	settings.py	urls.py
+
+   NOTE: Due to Django restrictions, the Django project directory (that you
+         configured in the Prerequisites section above) cannot also be called
+         'djurk.' The project directory should have a different name.
+
+3) Add 'djurk' to the INSTALLED_APPS parameter in your settings file.
+
+4) Add database tables with syncdb. Now that Django knows about the 'djurk'
+   program (from step 3 above), we need to tell Django to add the appropriate
+   database tables. Use the "python manage.py syncdb" command to do this:
+
+prompt> python manage.py syncdb
+Creating tables ...
+Creating table djurk_hit
+Creating table djurk_assignment
+Creating table djurk_keyvalue
+Installing custom SQL ...
+Installing indexes ...
+No fixtures found.
+
+   If you don't see the message similar to "Creating table djurk_hit," then you
+   either may be using the South program with Django or you may have made a
+   mistake with previous instructions. If you see a message like the following,
+   then proceed to step 5:
+
+Not synced (use migrations):
+ - djurk
+(use ./manage.py migrate to migrate these)
+
+
+5) (Optional) Migrate database:
+   If you use the Django app 'South', then you will also need to migrate your
+   database. It does not hurt to try this step regardless. If you see the
+   message below, you can skip to step 6:
+
+prompt> python manage.py migrate
+Unknown command: 'migrate'
+Type 'manage.py help' for usage
+
+    If you have south installed, you will see output similar to the following: 
+
+prompt> python manage.py migrate
+Running migrations for djurk:
+ - Migrating forwards to 0001_initial.
+ > djurk:0001_initial
+ - Loading initial data for djurk.
+No fixtures found.
+
+6. Enable and configure the Django Admin. By now, you should have Django, boto,
+   and djurk installed. You still need to configure Django to use the admin
+   (if you had not already done so previously).
+
+   Ensure that the 'django.contrib.admin' package is enabled (not commented
+   out) in the INSTALLED_APPS section of the settings.py file:
+
+INSTALLED_APPS = (
+    # Uncomment the next line to enable the admin:
+    'django.contrib.admin',
+
+    Additionally, there are two sections of the urls.py file that need to
+    be active (and not commented):
+
+# Uncomment the next two lines to enable the admin:
+from django.contrib import admin
+admin.autodiscover()
+
+
+# Uncomment the next line to enable the admin:
+url(r'^admin/', include(admin.site.urls)),
+
+7. Test configuration. By now, the basic components should be installed and 
+   we should be able to access the Djurk models through the Admin interface.
+
+   Start the Django runserver:
+
+prompt> python manage.py runserver
+Validating models...
+
+0 errors found
+Django version 1.3.1, using settings 'djurk_project.settings'
+Development server is running at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+    Then, go to the following website:
+    http://127.0.0.1:8000/admin/
+
+    You should see a section titled 'Djurk' on this page with three options:
+    * Assignments
+    * HITs
+    * Key-Value Pairs
 
