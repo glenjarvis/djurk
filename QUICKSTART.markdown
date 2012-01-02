@@ -10,25 +10,35 @@ Start Guide.
 4. Change to Repo's src directory
    (A crude basic django app is included so that you can start running)
 5. Sync database:
-   prompt> python manage.py syncdb
-   Creating tables ...
-   Creating table auth_permission
-   [snip]
-   Creating table djurk_hit
-   Creating table djurk_assignment
-   Creating table djurk_keyvalue
+``` 
+    prompt> python manage.py syncdb
+    Creating tables ...
+    Creating table auth_permission
+    [snip]
+    Creating table djurk_hit
+    Creating table djurk_assignment
+    Creating table djurk_keyvalue
+```
 6. Start local webserver/runserver:
-   prompt> ./manage.py runserver
-   Validating models...
 
-   0 errors found
-   Django version 1.3.1, using settings 'src.settings'
-   Development server is running at http://127.0.0.1:8000/
-   Quit the server with CONTROL-C.
+```
+    prompt> ./manage.py runserver
+    Validating models...
+
+    0 errors found
+    Django version 1.3.1, using settings 'src.settings'
+    Development server is running at http://127.0.0.1:8000/
+    Quit the server with CONTROL-C.
+```
+
+
 7. Visit Admin Page with Web Browser:
+
+
    http://127.0.0.1:8000/admin
 
    You should now see a Djurk module with these models:
-   * Assignments
-   * HITs
-   * Key-Value Pairs
+
+* Assignments
+* HITs
+* Key-Value Pairs
