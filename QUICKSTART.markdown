@@ -49,7 +49,7 @@ Start Guide.
 9. Create filename 'mturk_config.cfg' in same directory as settings.py. Put
       this info in it (with this format)
 
-```[Connection]
+```\[Connection\]
 aws_acccess_key_id: put_your_access_key_here
 aws_secret_access_key: put_your_secret_key_here
 host: mechanicalturk.sandbox.amazonaws.com```
