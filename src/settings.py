@@ -1,4 +1,5 @@
 # Django settings for demo project.
+import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -144,3 +145,6 @@ LOGGING = {
         },
     }
 }
+
+DJURK_ROOT = os.path.abspath(os.path.dirname(__file__))
+DJURK_CONFIG_FILE = os.path.join(DJURK_ROOT, 'mturk_config.cfg')

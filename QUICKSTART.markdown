@@ -20,7 +20,6 @@ Start Guide.
     Creating table djurk_keyvalue
 ```
 6. Start local webserver/runserver:
-
 ```
     prompt> ./manage.py runserver
     Validating models...
@@ -30,10 +29,7 @@ Start Guide.
     Development server is running at http://127.0.0.1:8000/
     Quit the server with CONTROL-C.
 ```
-
-
 7. Visit Admin Page with Web Browser:
-
 
    http://127.0.0.1:8000/admin
 
@@ -42,3 +38,13 @@ Start Guide.
 * Assignments
 * HITs
 * Key-Value Pairs
+8. Find your Amazon Mechanical Turk Private and Public Access Keys
+* AWS Console (http://aws.amazon.com/)
+* Login
+* Security Credentials
+* Access Keys (Access Key ID) and Secret Access Key (click show)
+9. Create filename 'mturk_config.cfg' in same directory as settings.py. Put this info in it (with this format)
+```[Connection]
+aws_acccess_key_id: put_your_access_key_here
+aws_secret_access_key: put_your_secret_key_here
+host: mechanicalturk.sandbox.amazonaws.com```
