@@ -14,19 +14,54 @@ http://docs.amazonwebservices.com/AWSMechTurk/2008-08-02/AWSMturkAPI/
 
 To keep the experience easier for a Django user, Python and Django
 conventions are used whenever possible. For example, the Mechanical Turk
-API has an attribute 'HITId.' However, when modeled here, that attribute
-has name 'hit_id.' An exception to that rule is that many string based
-fields in the Mechanical Turk API return Nulls/Nones. Django prefers not
-to allow CharFields to be nullable as both Null/None and the empty
-string are redundant. As the API does return nullable data types, we
-broke with Django convention on that point.
+API has an attribute 'HITTypeId.' However, when modeled here, that
+attribute has name 'hit_type_id.' An exception to that rule is that many
+string based fields in the Mechanical Turk API return Null/None. Django
+prefers not to allow CharFields to be nullable as both Null/None and the
+empty string are redundant. As the API does return nullable data types,
+we broke with Django convention on that point.
 """
 
+import boto
 from django.db import models
+from django.db.models.signals import pre_init
+
+from djurk.common import amazon_string_to_datetime, get_connection
+
+
+def init_connection_callback(sender, **signal_args):
+    """Mechanical Turk connection signal callback
+
+    By using Django pre-init signals, class level connections can be
+    made available to Django models that configure this pre-init
+    signal.
+
+    WARNING: Since self.connection is configured on the class level,
+    any changes (e.g., to change use_sandbox=True|False) happen at the
+    class level, and thus, would affect *all* connections -- not just
+    newly created classes.
+    """
+    use_sandbox = False
+    sender.args = sender
+    object_args = signal_args['kwargs']
+    if 'use_sandbox' in object_args:
+        use_sandbox = object_args.pop(u'use_sandbox')
+    sender.connection = get_connection(use_sandbox=use_sandbox)
+
+
+class DisposeException(Exception):
+    """Unable to Dispose of HIT Exception"""
+    def __init__(self, value):
+        self.parameter = value
+
+    def __unicode__(self):
+        return repr(self.parameter)
+    __str__ = __unicode__
 
 
 class HIT(models.Model):
     """An Amazon Mechanical Turk Human Intelligence Task as a Django Model"""
+
     (ASSIGNABLE, UNASSIGNABLE, REVIEWABLE, REVIEWING, DISPOSED) = (
           'A', 'U', 'R', 'G', 'D')
 
@@ -57,9 +92,8 @@ class HIT(models.Model):
     reverse_status_lookup = dict((v, k) for k, v in STATUS_CHOICES)
     reverse_review_lookup = dict((v, k) for k, v in REVIEW_CHOICES)
 
-    hit_id = models.CharField(
+    mturk_id = models.CharField(
             "HIT ID",
-            primary_key=True, # See docs/ for a discussion on char primary key
             max_length=255,
             unique=True,
             null=True,
@@ -95,7 +129,7 @@ class HIT(models.Model):
             help_text=("One or more words or phrases that describe "
                        "the HIT, separated by commas."),
     )
-    hit_status = models.CharField(
+    status = models.CharField(
             "HIT Status",
             max_length=1,
             choices=STATUS_CHOICES,
@@ -150,7 +184,7 @@ class HIT(models.Model):
             help_text=("The number of HITs with fields identical to this "
                        "HIT, other than the Question field.")
     )
-    hit_review_status = models.CharField(
+    review_status = models.CharField(
             "HIT Review Status",
             max_length=1,
             choices=REVIEW_CHOICES,
@@ -178,12 +212,117 @@ class HIT(models.Model):
                        "have been approved or rejected.")
     )
 
+    def dispose(self):
+        """Dispose of a HIT that is no longer needed.
+
+        Only HITs in the "Reviewable" state, with all submitted
+        assignments approved or rejected, can be disposed. This removes
+        the data from Amazon Mechanical Turk, but not from the local
+        Django database (i.e., a local cache copy is kept).
+
+        This is a wrapper around the Boto API. Also see:
+        http://boto.cloudhackers.com/en/latest/ref/mturk.html
+        """
+        # Don't waste time or resources if already marked as DISPOSED
+        if self.status == self.DISPOSED:
+            return
+
+        # Check for new results and cache a copy in Django model
+        self.update(do_update_assignments=True)
+
+        # Verify HIT is reviewable
+        if self.status != self.REVIEWABLE:
+            #TODO: Excercise line
+            raise DisposeException(
+                    "Can't dispose of HIT (%s) that is still in %s status." % (
+                        self.mturk_id,
+                        dict(self.STATUS_CHOICES)[self.status]))
+
+        # Verify Assignments are either APPROVED or REJECTED
+        for assignment in self.assignments.all():
+            if assignment.status not in [Assignment.APPROVED,
+                    Assignment.REJECTED]:
+                raise DisposeException(
+                        "Can't dispose of HIT (%s) because Assignment "
+                        "(%s) is not approved or rejected." % (
+                            self.mturk_id, assignment.mturk_id))
+
+        # Checks pass. Dispose of HIT and update status
+        self.connection.dispose_hit(self.mturk_id)
+        self.update()
+
+    def expire(self):
+        """Expire a HIT that is no longer needed as Mechanical Turk service
+
+        The effect is identical to the HIT expiring on its own. The HIT
+        no longer appears on the Mechanical Turk web site, and no new
+        Workers are allowed to accept the HIT. Workers who have accepted
+        the HIT prior to expiration are allowed to complete it or return
+        it, or allow the assignment duration to elapse (abandon the HIT).
+        Once all remaining assignments have been submitted, the expired
+        HIT moves to the "Reviewable" state.
+
+        This is a thin wrapper around the Boto API and taken from their
+        documentation:
+        http://boto.cloudhackers.com/en/latest/ref/mturk.html
+        """
+        self.connection.expire_hit(self.mturk_id)
+        self.update()
+
+    def update(self, mturk_hit=None, do_update_assignments=False):
+        """Update self with Mechanical Turk API data
+
+        If mturk_hit is given to this function, it should be a Boto
+        hit object that represents a Mechanical Turk HIT instance.
+        Otherwise, Amazon Mechanical Turk is contacted to get additional
+        information.
+
+        This instance's attributes are updated.
+        """
+        if mturk_hit is None:
+            hit = self.connection.get_hit(self.mturk_id)[0]
+        else:
+            assert isinstance(mturk_hit, boto.mturk.connection.HIT)
+            hit = mturk_hit
+
+        self.status = HIT.reverse_status_lookup[hit.HITStatus]
+        self.reward = hit.Amount
+        self.assignment_duration_in_seconds = hit.AssignmentDurationInSeconds
+        self.auto_approval_delay_in_seconds = hit.AutoApprovalDelayInSeconds
+        self.max_assignments = hit.MaxAssignments
+        self.creation_time = amazon_string_to_datetime(hit.CreationTime)
+        self.description = hit.Description
+        self.title = hit.Title
+        self.hit_type_id = hit.HITTypeId
+        self.keywords = hit.Keywords
+        if hasattr(self, 'NumberOfAssignmentsCompleted'):
+            self.number_of_assignments_completed =\
+                    hit.NumberOfAssignmentsCompleted
+        if hasattr(self, 'NumberOfAssignmentsAvailable'):
+            self.number_of_assignments_available =\
+                    hit.NumberOfAssignmentsAvailable
+        if hasattr(self, 'NumberOfAssignmentsPending'):
+            self.number_of_assignments_pending =\
+                    hit.NumberOfAssignmentsPending
+        #'CurrencyCode', 'Reward', 'Expiration', 'expired']
+
+        self.save()
+
+        if do_update_assignments:
+            for mturk_assignment in self.connection.get_assignments(
+                                                               self.mturk_id):
+                assert mturk_assignment.HITId == self.mturk_id
+                djurk_assignment = Assignment.objects.get_or_create(
+                        mturk_id=mturk_assignment.AssignmentId, hit=self)[0]
+                djurk_assignment.update(mturk_assignment)
+
     class Meta:
         verbose_name = "HIT"
         verbose_name_plural = "HITs"
 
     def __unicode__(self):
-        return u"HIT: %s" % self.hit_id
+        return u"HIT: %s" % self.mturk_id
+pre_init.connect(init_connection_callback, sender=HIT)
 
 
 class Assignment(models.Model):
@@ -200,9 +339,9 @@ class Assignment(models.Model):
     # Convenience lookup dictionaries for the above lists
     reverse_status_lookup = dict((v, k) for k, v in STATUS_CHOICES)
 
-    assignment_id = models.CharField(
+    mturk_id = models.CharField(
+            "Assignment ID",
             max_length=255,
-            primary_key=True, # See docs/ for a discussion on char primary key
             unique=True,
             null=True,
             help_text="A unique identifier for the assignment"
@@ -217,8 +356,9 @@ class Assignment(models.Model):
             HIT,
             null=True,
             blank=True,
+            related_name='assignments',
     )
-    assignment_status = models.CharField(
+    status = models.CharField(
             max_length=1,
             choices=STATUS_CHOICES,
             null=True,
@@ -271,16 +411,90 @@ class Assignment(models.Model):
                        "approve or reject the assignment.")
     )
 
-    def hit_id(self):
-        """Return the HIT ID as expected by the the Mechanical Turk API"""
-        return self.hit.hit_id
+    def approve(self, feedback=None):
+        """Thin wrapper around Boto approve function."""
+        self.connection.approve_assignment(self.mturk_id, feedback=feedback)
+        self.update()
+
+    def reject(self, feedback=None):
+        """Thin wrapper around Boto reject function."""
+        self.connection.reject_assignment(self.mturk_id, feedback=feedback)
+        self.update()
+
+    def bonus(self, value=0.0, feedback=None):
+        """Thin wrapper around Boto bonus function."""
+        self.connection.grant_bonus(self.worker_id,
+                                    self.mturk_id,
+                                    boto.mturk.price.Price(amount=value),
+                                    feedback=feedback)
+        self.update()
+
+    def update(self, mturk_assignment=None):
+        """Update self with Mechanical Turk API data
+
+        If mturk_assignment is given to this function, it should be
+        a Boto assignment object that represents a Mechanical Turk
+        Assignment instance.  Otherwise, Amazon Mechanical Turk is
+        contacted.
+
+        This instance's attributes are updated.
+        """
+        if mturk_assignment is None:
+            hit = self.connection.get_hit(self.hit.mturk_id)[0]
+            for a in self.connection.get_assignments(hit.HITId):
+                # While we have the query, we may as well update
+                if a.AssignmentId == self.mturk_id:
+                    # That's this record. Hold onto so we can update below
+                    assignment = a
+                else:
+                    other_assignment = Assignment.objects.get(
+                            mturk_id=a.AssignmentId)
+                    other_assignment.update(a)
+        else:
+            assert isinstance(mturk_assignment,
+                              boto.mturk.connection.Assignment)
+            assignment = mturk_assignment
+
+        self.status = self.reverse_status_lookup[assignment.AssignmentStatus]
+        self.worker_id = assignment.WorkerId
+        self.submit_time = amazon_string_to_datetime(assignment.SubmitTime)
+        self.accept_time = amazon_string_to_datetime(assignment.AcceptTime)
+        self.auto_approval_time = amazon_string_to_datetime(
+                assignment.AutoApprovalTime)
+        self.submit_time = amazon_string_to_datetime(assignment.SubmitTime)
+
+        # Different response groups for query
+        if hasattr(assignment, 'RejectionTime'):
+            self.rejection_time = amazon_string_to_datetime(
+                    assignment.RejectionTime)
+        if hasattr(assignment, 'ApprovalTime'):
+            self.approval_time = amazon_string_to_datetime(
+                    assignment.ApprovalTime)
+        self.save()
+
+        # Update any Key-Value Pairs that were associated with this
+        # assignment
+        for result_set in assignment.answers:
+            for question in result_set:
+                for key, value in question.fields:
+                    kv = KeyValue.objects.get_or_create(key=key,
+                                                        assignment=self)[0]
+                    if kv.value != value:
+                        kv.value = value
+                        kv.save()
 
     def __unicode__(self):
-        return u"Assignment: %s" % self.assignment_id
+        return self.mturk_id
+
+    def __repr__(self):
+        return u"Assignment: %s" % self.mturk_id
+    __str__ = __unicode__
+pre_init.connect(init_connection_callback, sender=Assignment)
 
 
 class KeyValue(models.Model):
     """Answer/Key Value Pairs"""
+
     MAX_DISPLAY_LENGTH = 255
 
     key = models.CharField(
@@ -296,6 +510,7 @@ class KeyValue(models.Model):
             Assignment,
             null=True,
             blank=True,
+            related_name="answers",
     )
 
     def short_value(self):
