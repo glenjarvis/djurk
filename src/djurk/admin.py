@@ -57,6 +57,7 @@ reject_assignment.short_description = "Reject assignment (Don't pay worker)"
 
 class KeyValueInline(admin.TabularInline):
     model = KeyValue
+    readonly_fields = ('key', 'value')
 
 
 class HIT_Admin(admin.ModelAdmin):
@@ -92,7 +93,7 @@ class HIT_Admin(admin.ModelAdmin):
                      'number_of_assignments_completed',
                  )
             }),
-            ('Attached Content', {
+            ('Attached Objects', {
                 'classes': ('collapse',),
                 'fields': (
                      'content_type',
@@ -109,11 +110,24 @@ class HIT_Admin(admin.ModelAdmin):
         'reward'
     )
     readonly_fields = (
-        'creation_time',
         'mturk_id',
         'hit_type_id',
+        'creation_time',
         'status',
         'review_status',
+        'title',
+        'keywords',
+        'description',
+        'reward',
+        'lifetime_in_seconds',
+        'auto_approval_delay_in_seconds',
+        'number_of_similar_hits',
+        'review_status',
+        'max_assignments',
+        'assignment_duration_in_seconds',
+        'number_of_assignments_pending',
+        'number_of_assignments_available',
+        'number_of_assignments_completed',
     )
     list_display_links = list_display
     list_filter = (
