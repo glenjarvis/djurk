@@ -47,7 +47,7 @@ def get_connection(use_sandbox=False):
     syntax similar to the following:
 
     DJURK = {
-        'aws_acccess_key_id': 'BJLBD8MOPC4ZDEB37QFB',
+        'aws_access_key_id': 'BJLBD8MOPC4ZDEB37QFB',
         'aws_secret_access_key': 'g8Xw/sCOLY5WYtS091kcVdy0cMUZgdSdS',
         'host': 'mechanicalturk.amazonaws.com',
         'debug': 1
@@ -66,7 +66,7 @@ def get_connection(use_sandbox=False):
     example of these contents follow:
 
     [Connection]
-    aws_acccess_key_id: 'BJLBD8MOPC4ZDEB37QFB'
+    aws_access_key_id: 'BJLBD8MOPC4ZDEB37QFB'
     aws_secret_access_key: 'g8Xw/sCOLY5WYtS091kcVdy0cMUZgdSdS'
     host: 'mechanicalturk.amazonaws.com'
     debug: 1
@@ -78,7 +78,7 @@ def get_connection(use_sandbox=False):
     debug = 1
 
     if hasattr(settings, 'DJURK'):
-        aws_acccess_key_id = settings.DJURK['aws_acccess_key_id']
+        aws_access_key_id = settings.DJURK['aws_access_key_id']
         aws_secret_access_key = settings.DJURK['aws_secret_access_key']
         if host in settings.DJURK:
             host = settings.DJURK['host']
@@ -89,7 +89,7 @@ def get_connection(use_sandbox=False):
         config.read(settings.DJURK_CONFIG_FILE)
 
         aws_access_key_id = config.get('Connection',
-                                       'aws_acccess_key_id')
+                                       'aws_access_key_id')
         aws_secret_access_key = config.get('Connection',
                                            'aws_secret_access_key')
         if config.has_option('Connection', 'host'):
