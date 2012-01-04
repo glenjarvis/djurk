@@ -53,6 +53,12 @@ class Command(BaseCommand):
         dest='sandbox',
         default=False,
         help='Use Amazon Mechanical Turk Sandbox (instead of production)'),
+        make_option(
+        '--loop',
+        action='store_true',
+        dest='loop',
+        default=False,
+        help='Use Amazon Mechanical Turk Sandbox (instead of production)'),
     )
 
     def handle(self, *args, **options):
@@ -76,4 +82,6 @@ class Command(BaseCommand):
                 update_all_hits(
                         do_update_assignments=do_update_assignments)
             logging.info("Sleeping")
+            if not options['loop']:
+                break
             time.sleep(SLEEP_TIME)
