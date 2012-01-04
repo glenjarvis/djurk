@@ -23,6 +23,8 @@ we broke with Django convention on that point.
 """
 
 import boto
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.signals import pre_init
 
@@ -211,6 +213,28 @@ class HIT(models.Model):
             help_text=("The number of assignments for this HIT that "
                        "have been approved or rejected.")
     )
+
+    # To allow attachment of Generic Django instances
+    content_type = models.ForeignKey(
+            ContentType,
+            verbose_name="Content type",
+            related_name="hit",
+            help_text=("Any Django model can be generically attached to "
+                       "this HIT. This is the content type of that model "
+                       "instance."),
+            blank=True,
+            null=True)
+
+    content_id = models.PositiveIntegerField(
+            "Content id",
+            blank=True,
+            null=True,
+            help_text=("Any Django model can be generically attached to "
+                       "this HIT. This is the id of that model instance."))
+    attached_object = generic.GenericForeignKey(
+            ct_field="content_type",
+            fk_field="content_id",
+            )
 
     def disable(self):
         """Disable/Destroy HIT that is no longer needed

@@ -64,12 +64,13 @@ class HIT_Admin(admin.ModelAdmin):
                update_hit]
     date_hierarchy = 'creation_time'
     fieldsets = (
+
             (None, {
                 'fields': (('mturk_id', 'hit_type_id'),
                            ('creation_time', 'status'),
                            ('title', 'keywords', 'description'),
-                           'reward',
-                           'requester_annotation',
+                            'reward',
+                            'requester_annotation',
                            ),
             }),
             ('HIT Details', {
@@ -89,6 +90,13 @@ class HIT_Admin(admin.ModelAdmin):
                      'number_of_assignments_pending',
                      'number_of_assignments_available',
                      'number_of_assignments_completed',
+                 )
+            }),
+            ('Attached Content', {
+                'classes': ('collapse',),
+                'fields': (
+                     'content_type',
+                     'content_id',
                  )
             }),
     )
