@@ -519,10 +519,12 @@ class Assignment(models.Model):
 
     def bonus(self, value=0.0, feedback=None):
         """Thin wrapper around Boto bonus function."""
-        self.connection.grant_bonus(self.worker_id,
-                                    self.mturk_id,
-                                    boto.mturk.price.Price(amount=value),
-                                    feedback=feedback)
+
+        self.connection.grant_bonus(
+                self.worker_id,
+                self.mturk_id,
+                bonus_price=boto.mturk.price.Price(amount=value),
+                reason=feedback)
         self.update()
 
     def update(self, mturk_assignment=None):
