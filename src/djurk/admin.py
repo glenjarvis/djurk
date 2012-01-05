@@ -147,7 +147,7 @@ class HIT_Admin(admin.ModelAdmin):
 
 class AssignmentAdmin(admin.ModelAdmin):
     actions = [approve_assignment, reject_assignment, update_hit]
-    search_fields = ('mturk_id',)
+    search_fields = ('mturk_id', 'hit__mturk_id')
     date_hierarchy = 'submit_time'
     list_display = (
         'mturk_id',
