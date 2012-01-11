@@ -103,8 +103,4 @@ them wait?
     4. click "GO."
 
 
-This was a quick demo of Djurk. Don't forget that, in these instructions, you
-are running out of a sample debug server. For serious work, you should consider
-installing the Djurk app into your own Django projects. See the [Installation
-Guide](https://github.com/glenjarvis/djurk/wiki/Installation-Guide) for more
-details.
+This was a quick demo of Djurk. Don't forget that, in these instructions, you are running out of a sample debug server. For serious work, you should consider installing the Djurk app into your own Django projects. See the [Installation Guide](https://github.com/glenjarvis/djurk/wiki/Installation-Guide) for more details.
