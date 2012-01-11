@@ -30,4 +30,7 @@ this a pipedream (That is; bookmark it and come back later).
 Why make this so public if it's little more than a few README files? Because
 transparency is good. A lot can grow from a little seed like this is now.
 
+Get started with Quick Start Guide:
+[https://github.com/glenjarvis/djurk/wiki/Quick-Start](https://github.com/glenjarvis/djurk/wiki/Quick-Start)
+
 [1] http://www.imdb.com/title/tt0032138/quotes
