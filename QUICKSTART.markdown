@@ -21,13 +21,13 @@ Creating table djurk_keyvalue
 ```
 6. Start local webserver/runserver:
 ```
-prompt> ./manage.py runserver
-Validating models...
-
-0 errors found
-Django version 1.3.1, using settings 'src.settings'
-Development server is running at http://127.0.0.1:8000/
-Quit the server with CONTROL-C. 
+prompt> ./manage.py runserver  
+Validating models...  
+  
+0 errors found  
+Django version 1.3.1, using settings 'src.settings'  
+Development server is running at http://127.0.0.1:8000/  
+Quit the server with CONTROL-C.  
 ```
 7. Visit Admin Page with Web Browser:
     http://127.0.0.1:8000/admin
@@ -103,8 +103,4 @@ them wait?
     4. click "GO."
 
 
-This was a quick demo of Djurk. Don't forget that, in these instructions, you
-are running out of a sample debug server. For serious work, you should consider
-installing the Djurk app into your own Django projects. See the [Installation
-Guide](https://github.com/glenjarvis/djurk/wiki/Installation-Guide) for more
-details.
+This was a quick demo of Djurk. Don't forget that, in these instructions, you are running out of a sample debug server. For serious work, you should consider installing the Djurk app into your own Django projects. See the [Installation Guide](https://github.com/glenjarvis/djurk/wiki/Installation-Guide) for more details.
