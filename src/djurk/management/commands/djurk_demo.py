@@ -74,7 +74,7 @@ def demo_create_favorite_color_hit(use_sandbox=False):
     else:
         base = "https://www.mturk.com" 
 
-    print "\nVisit this website to see HITs that were created:"
+    print "\nVisit this website to see the HIT that was created:"
     print "%s/mturk/preview?groupId=%s" % (base, hit[0].HITTypeId)
 
     return hit[0]
