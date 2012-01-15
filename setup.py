@@ -15,6 +15,7 @@ setup(name='django-savvy',
       packages=['djurk', 
                 'djurk.migrations',
                 'djurk.management'],
+      package_dir={'':'src'},
       classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Framework :: Django',
