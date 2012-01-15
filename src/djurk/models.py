@@ -405,12 +405,18 @@ class HIT(models.Model):
         self.save()
 
         if do_update_assignments:
-            for mturk_assignment in self.connection.get_assignments(
-                                                               self.mturk_id):
-                assert mturk_assignment.HITId == self.mturk_id
-                djurk_assignment = Assignment.objects.get_or_create(
-                        mturk_id=mturk_assignment.AssignmentId, hit=self)[0]
-                djurk_assignment.update(mturk_assignment)
+            self.update_assignments()
+
+    def update_assignments(self,page_number=1,page_size=10,update_all=True):
+        assignments = self.connection.get_assignments(self.mturk_id,page_size=page_size, page_number=page_number)
+        for mturk_assignment in assignments:
+            assert mturk_assignment.HITId == self.mturk_id
+            djurk_assignment = Assignment.objects.get_or_create(
+                    mturk_id=mturk_assignment.AssignmentId, hit=self)[0]
+            djurk_assignment.update(mturk_assignment, hit=self)
+        if update_all and int(assignments.PageNumber) * page_size < int(assignments.TotalNumResults):
+            self.update_assignments(page_number+1, page_size, update_all)
+        
 
     class Meta:
         verbose_name = "HIT"
@@ -527,7 +533,7 @@ class Assignment(models.Model):
                 reason=feedback)
         self.update()
 
-    def update(self, mturk_assignment=None):
+    def update(self, mturk_assignment=None, hit = None):
         """Update self with Mechanical Turk API data
 
         If mturk_assignment is given to this function, it should be
