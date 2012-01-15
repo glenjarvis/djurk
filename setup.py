@@ -5,7 +5,7 @@ Created on Jan 10, 2012
 '''
 from distutils.core import setup
 
-setup(name='django-savvy',
+setup(name='djurk',
       version='0.01.01-Alpha',
       description='A Django app for accessing Mechanical Turk',
       long_description=open('README.markdown').read(),
