@@ -375,7 +375,7 @@ class HIT(models.Model):
 
         This instance's attributes are updated.
         """
-        if mturk_hit is None:
+        if mturk_hit is None or not hasattr(mturk_hit,"HITStatus"):
             hit = self.connection.get_hit(self.mturk_id)[0]
         else:
             assert isinstance(mturk_hit, boto.mturk.connection.HIT)
