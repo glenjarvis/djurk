@@ -5,17 +5,21 @@ Created on Jan 10, 2012
 '''
 from distutils.core import setup
 
-setup(name='djurk',
+setup(name='django-djurk',
       version='0.01.01-Alpha',
       description='A Django app for accessing Mechanical Turk',
       long_description=open('README.markdown').read(),
       author='Glen Jarvis',
       url='http://djurk.org/',
       license='BSD',
-      packages=['djurk', 
+      install_requires=[
+          'Django',
+          'boto==2.1.1',
+      ],
+      packages=['djurk',
                 'djurk.migrations',
                 'djurk.management'],
-      package_dir={'':'src'},
+      package_dir={'': 'src'},
       classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Framework :: Django',

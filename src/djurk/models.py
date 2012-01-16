@@ -375,7 +375,7 @@ class HIT(models.Model):
 
         This instance's attributes are updated.
         """
-        if mturk_hit is None or not hasattr(mturk_hit,"HITStatus"):
+        if mturk_hit is None or not hasattr(mturk_hit, "HITStatus"):
             hit = self.connection.get_hit(self.mturk_id)[0]
         else:
             assert isinstance(mturk_hit, boto.mturk.connection.HIT)
@@ -407,16 +407,18 @@ class HIT(models.Model):
         if do_update_assignments:
             self.update_assignments()
 
-    def update_assignments(self,page_number=1,page_size=10,update_all=True):
-        assignments = self.connection.get_assignments(self.mturk_id,page_size=page_size, page_number=page_number)
+    def update_assignments(self, page_number=1, page_size=10, update_all=True):
+        assignments = self.connection.get_assignments(self.mturk_id,
+                                                      page_size=page_size,
+                                                      page_number=page_number)
         for mturk_assignment in assignments:
             assert mturk_assignment.HITId == self.mturk_id
             djurk_assignment = Assignment.objects.get_or_create(
                     mturk_id=mturk_assignment.AssignmentId, hit=self)[0]
             djurk_assignment.update(mturk_assignment, hit=self)
-        if update_all and int(assignments.PageNumber) * page_size < int(assignments.TotalNumResults):
-            self.update_assignments(page_number+1, page_size, update_all)
-        
+        if update_all and int(assignments.PageNumber) *\
+                            page_size < int(assignments.TotalNumResults):
+            self.update_assignments(page_number + 1, page_size, update_all)
 
     class Meta:
         verbose_name = "HIT"
@@ -533,7 +535,7 @@ class Assignment(models.Model):
                 reason=feedback)
         self.update()
 
-    def update(self, mturk_assignment=None, hit = None):
+    def update(self, mturk_assignment=None, hit=None):
         """Update self with Mechanical Turk API data
 
         If mturk_assignment is given to this function, it should be
