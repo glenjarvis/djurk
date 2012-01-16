@@ -10,6 +10,7 @@ setup(name='django-djurk',
       description='A Django app for accessing Mechanical Turk',
       long_description=open('README.markdown').read(),
       author='Glen Jarvis',
+      author_email='glen@glenjarvis.com',
       url='http://djurk.org/',
       license='BSD',
       install_requires=[
