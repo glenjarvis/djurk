@@ -80,9 +80,9 @@ def get_connection(use_sandbox=False):
     if hasattr(settings, 'DJURK'):
         aws_access_key_id = settings.DJURK['aws_access_key_id']
         aws_secret_access_key = settings.DJURK['aws_secret_access_key']
-        if host in settings.DJURK:
+        if 'host' in settings.DJURK:
             host = settings.DJURK['host']
-        if debug in settings.DJURK:
+        if 'debug' in settings.DJURK:
             debug = settings.DJURKp['debug']
     elif hasattr(settings, 'DJURK_CONFIG_FILE'):
         config = ConfigParser.ConfigParser()
