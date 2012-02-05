@@ -10,10 +10,10 @@ from django.core.management.base import BaseCommand
 from boto.mturk.question import (AnswerSpecification, Overview, Question,
         QuestionContent, QuestionForm, FreeTextAnswer, FormattedContent)
 
-from djurk.common import get_connection
+from djurk.common import get_connection, get_worker_url
 
 
-def demo_create_favorite_color_hit(use_sandbox=False):
+def demo_create_favorite_color_hit():
     """A HIT to determine the Worker's favorite color"""
 
     TITLE = 'Tell me your favorite color'
@@ -23,7 +23,7 @@ def demo_create_favorite_color_hit(use_sandbox=False):
     KEYWORDS = 'data collection, favorite, color'
     DURATION = 15 * 60  # 15 minutes (Time to work on HIT)
     MAX_ASSIGNMENTS = 1  # Number of assignments per HIT
-    REWARD_PER_ASSIGNMENT = 0.01  # $0.01 USD (1 cent)
+    REWARD_PER_ASSIGNMENT = 0.00  # $0.00 USD (1 cent)
 
     #--------------- BUILD HIT container -------------------
     overview = Overview()
@@ -34,7 +34,9 @@ def demo_create_favorite_color_hit(use_sandbox=False):
     #---------------  BUILD QUESTION 1 -------------------
     question_content = QuestionContent()
     question_content.append(FormattedContent(
-         "<b>What is your favorite color?</b>"))
+         "<b>What is your favorite color?</b> There isn't a financial "
+         "reward for answering, but you will get an easy approval for your "
+         "statistics."))
 
     free_text_answer = FreeTextAnswer(num_lines=1)
 
@@ -59,7 +61,7 @@ def demo_create_favorite_color_hit(use_sandbox=False):
     question_form.append(q2)
 
     #--------------- CREATE THE HIT -------------------
-    mtc = get_connection(use_sandbox=use_sandbox)
+    mtc = get_connection()
     hit = mtc.create_hit(questions=question_form,
                          max_assignments=MAX_ASSIGNMENTS,
                          title=TITLE,
@@ -69,10 +71,7 @@ def demo_create_favorite_color_hit(use_sandbox=False):
                          reward=REWARD_PER_ASSIGNMENT)
 
     #---------- SHOW A LINK TO THE HIT GROUP -----------
-    if use_sandbox:
-        base = "https://workersandbox.mturk.com" 
-    else:
-        base = "https://www.mturk.com" 
+    base = get_worker_url()
 
     print "\nVisit this website to see the HIT that was created:"
     print "%s/mturk/preview?groupId=%s" % (base, hit[0].HITTypeId)
@@ -82,34 +81,27 @@ def demo_create_favorite_color_hit(use_sandbox=False):
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
-        '--account-balance',
-        action='store_true',
-        dest='account_balance',
-        default=False,
-        help='Print account balance '),
+            '--account-balance',
+            action='store_true',
+            dest='account_balance',
+            default=False,
+            help='Print account balance '),
         make_option(
-        '--sample-hit',
-        action='store_true',
-        dest='sample_hit',
-        default=False,
-        help=('Create sample "favorite color" hit')),
-        make_option(
-        '--sandbox',
-        action='store_true',
-        dest='sandbox',
-        default=False,
-        help='Use Amazon Mechanical Turk Sandbox (instead of production)'),
+            '--sample-hit',
+            action='store_true',
+            dest='sample_hit',
+            default=False,
+            help=('Create sample "favorite color" hit')),
     )
 
     def check_account_balance(self):
         print self.mtc.get_account_balance()
 
     def handle(self, *args, **options):
-        self.use_sandbox = options['sandbox']
-        self.mtc = get_connection(use_sandbox=self.use_sandbox)
+        self.mtc = get_connection()
 
         if options['account_balance']:
             self.check_account_balance()
 
         if options['sample_hit']:
-            demo_create_favorite_color_hit(use_sandbox=self.use_sandbox)
+            demo_create_favorite_color_hit()

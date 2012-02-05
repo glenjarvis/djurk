@@ -35,39 +35,28 @@ logger = logging.getLogger("djurk").addHandler(NullHandler())
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
-        '--assignments',
-        action='store_true',
-        dest='do_update_assignments',
-        default=False,
-        help='Update Assignments as well as HITs (more intensive)'),
+            '--assignments',
+            action='store_true',
+            dest='do_update_assignments',
+            default=False,
+            help='Update Assignments as well as HITs (more intensive)'),
         make_option(
-        '--reviewable',
-        action='store_true',
-        dest='reviewable',
-        default=False,
-        help=('Only update reviewable HITs (less demand on MTurk - '
-              ' possibly miss HITs)')),
+            '--reviewable',
+            action='store_true',
+            dest='reviewable',
+            default=False,
+            help=('Only update reviewable HITs (less demand on MTurk - '
+                  ' possibly miss HITs)')),
         make_option(
-        '--sandbox',
-        action='store_true',
-        dest='sandbox',
-        default=False,
-        help='Use Amazon Mechanical Turk Sandbox (instead of production)'),
-        make_option(
-        '--loop',
-        action='store_true',
-        dest='loop',
-        default=False,
-        help='Use Amazon Mechanical Turk Sandbox (instead of production)'),
+            '--loop',
+            action='store_true',
+            dest='loop',
+            default=False,
+            help='Use Amazon Mechanical Turk Sandbox (instead of production)'),
     )
 
     def handle(self, *args, **options):
-        use_sandbox = options['sandbox']
-        # Warning: This is a class level connection. If this is different
-        #          than other instances running, their connections will
-        #          also suddenly update
-        #          See comments in get_connection
-        mtc = get_connection(use_sandbox=use_sandbox)
+        mtc = get_connection()
         do_update_assignments = options['do_update_assignments']
 
         while True:

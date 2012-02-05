@@ -37,18 +37,10 @@ def init_connection_callback(sender, **signal_args):
     By using Django pre-init signals, class level connections can be
     made available to Django models that configure this pre-init
     signal.
-
-    WARNING: Since self.connection is configured on the class level,
-    any changes (e.g., to change use_sandbox=True|False) happen at the
-    class level, and thus, would affect *all* connections -- not just
-    newly created classes.
     """
-    use_sandbox = False
     sender.args = sender
     object_args = signal_args['kwargs']
-    if 'use_sandbox' in object_args:
-        use_sandbox = object_args.pop(u'use_sandbox')
-    sender.connection = get_connection(use_sandbox=use_sandbox)
+    sender.connection = get_connection()
 
 
 class DisposeException(Exception):
